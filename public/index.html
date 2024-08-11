@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Short URL Generator</title>
+	<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+	<style type="text/css">
+      * {
+	margin: 0px;
+	padding: 0px;
+	box-sizing: border-box;
+}
+body {
+	font-family: "Raleway", sans-serif;
+	background: #f3e5f5;
+}
+.header {
+	width: 100%;
+	height: 60px;
+	line-height: 60px;
+	text-align: center;
+	background: linear-gradient(45deg, #4a148c, #7b1fa2);
+	color: #fff;
+	font-weight: 600;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	transition: all 0.3s ease;
+}
+.header:hover {
+	background: linear-gradient(45deg, #7b1fa2, #4a148c);
+}
+.form {
+	padding: 50px 20px;
+	background: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+}
+.form:hover {
+	transform: scale(1.02);
+}
+.form > div {
+	width: 400px;
+	margin: 10px auto;
+	transition: all 0.3s ease;
+}
+.form .form-element input,
+.form .form-element button {
+	width: 100%;
+	padding: 10px;
+	margin-top: 10px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	transition: all 0.3s ease;
+}
+.form .form-element input:focus {
+	border-color: #6a1b9a;
+	box-shadow: 0 0 5px rgba(106, 27, 154, 0.3);
+}
+.form .form-element button {
+	background: #6a1b9a;
+	color: #fff;
+	outline: none;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+.form .form-element button:hover {
+	background: #4a148c;
+}
+.form .result {
+	text-align: center;
+	border-top: 1px solid #eee;
+	margin-top: 15px;
+	padding-top: 10px;
+}
+.form .result a {
+	color: #6a1b9a;
+	text-decoration: none;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+.form .result a:hover {
+	color: #4a148c;
+}
+.list {
+	width: 800px;
+	margin: 40px auto;
+	background: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+}
+.list h2 {
+	font-size: 30px;
+	margin-bottom: 20px;
+	text-align: center;
+	color: #6a1b9a;
+}
+.list table {
+	width: 100%;
+	text-align: center;
+	border-collapse: collapse;
+}
+.list table thead tr {
+	background: #6a1b9a;
+	color: #fff;
+	transition: all 0.3s ease;
+}
+.list table thead tr th,
+.list table tbody tr td {
+	padding: 10px;
+	border: 1px solid #ddd;
+}
+.list table tbody tr:nth-child(odd) {
+	background: #e1bee7;
+}
+.list table tbody tr:hover {
+	background: #d1c4e9;
+}
+
+/* Additional CSS for URL input field */
+.form .form-element.url-input {
+	position: relative;
+	margin-top: 20px;
+}
+.form .form-element.url-input input {
+	padding-right: 50px; /* Add space for the icon */
+}
+.form .form-element.url-input::before {
+	content: "\f0ac"; /* FontAwesome icon for the globe */
+	font-family: FontAwesome;
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #6a1b9a;
+	font-size: 20px;
+	transition: all 0.3s ease;
+}
+.form .form-element.url-input input:focus::before {
+	color: #4a148c;
+	transform: translateY(-50%) scale(1.2);
+}
+
+
+	</style>
+</head>
+<body>
+	<div class="header">
+		Create Short URL
+	</div>
+	<div class="form">
+		<div class="form-element">
+			<label for="longurl">Enter link</label>
+			<input type="text" id="longurl" placeholder="http://site.com">
+		</div>
+		<div class="form-element">
+			<button id="create-short-url">Create Short URL</button>
+		</div>
+		<div class="result">
+			<a href="#" id="short-url" target="_blank"></a>
+		</div>
+	</div>
+	<div class="list">
+		<h2>Shorten links</h2>
+		<table id="list_urls">
+			<thead>
+				<tr>
+					<th>LongURL</th>
+					<th>ShortURL</th>
+					<th>Count</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+
+	<script type="text/javascript">
+		const host = "http://localhost:5000/";
+		document.querySelector("#create-short-url").addEventListener("click",function(){
+			let longurl = document.querySelector("#longurl").value.trim();
+			if(longurl.length == 0){
+				alert("Enter valid url");
+				return;
+			} else if(!(longurl.startsWith("http://") || longurl.startsWith("https://"))){
+				alert("Enter valid link");
+				return;
+			}
+			fetch(host+"api/create-short-url",{
+				method:"POST",
+				body:JSON.stringify({
+					longurl:longurl
+				}),
+				headers:{
+					"Content-type":"application/json; charset=UTF-8"
+				}
+			}).then(function(response){
+				return response.json();
+			}).then(function(data){
+				if(data.status == "ok"){
+					document.querySelector("#short-url").innerText = host + data.shorturlid;
+					document.querySelector("#short-url").href = host + data.shorturlid;
+					let html = `
+						<tr>
+							<td>${longurl}</td>
+							<td><a href="${host}${data.shorturlid}" target="_blank">${host}${data.shorturlid}</a></td>
+							<td>${0}</td>
+						</tr>
+					`;
+					document.querySelector("#list_urls tbody").innerHTML += html;
+				}
+			}).catch(function(error){
+				alert("Something went wrong");
+			})
+		});
+		(function(){
+			fetch(host+"api/get-all-short-urls").then(function(response){
+				return response.json();
+			}).then(function(data){
+				let html = "";
+				for(let i=0;i<data.length;i++){
+					html += `
+						<tr>
+							<td>${data[i].longurl}</td>
+							<td><a href="${host}${data[i].shorturlid}" target="_blank">${host}${data[i].shorturlid}</a></td>
+							<td>${data[i].count}</td>
+						</tr>
+					`;
+				}
+				document.querySelector("#list_urls tbody").innerHTML = html;
+			}).catch(function(error){
+				alert("Something went wrong");
+			})
+		})();
+	</script>
+</body>
+</html>
